@@ -1,5 +1,66 @@
+"use client";
+
+import { currentUser } from "@clerk/nextjs";
+import { useForm } from "react-hook-form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "../ui/button";
+import { updateUser } from "@/lib/actions/user.actions";
+import { usePathname, useRouter } from "next/navigation";
+import { ThreadFormType, ThreadValidation } from "@/lib/validations/thread";
+import { Textarea } from "../ui/textarea";
+import { createThread } from "@/lib/actions/thread.actions";
+
+interface Props {
+  user: {
+    id: string;
+    objectId: string;
+    username: string;
+    name: string;
+    bio: string;
+    image: string;
+  };
+  btnTitle: string;
+}
+
 const PostThread = ({ userId }: { userId: string }) => {
-  return <h1>Post thread form</h1>;
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const form = useForm({
+    resolver: zodResolver(ThreadValidation),
+    defaultValues: {
+      accountId: userId,
+      thread: "",
+    },
+  });
+  const onSubmit = async (values: ThreadFormType) => {
+    await createThread({ author: userId, text: values.thread, communityId: null, path: pathname });
+    router.push("/");
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-10 flex flex-col justify-start gap-10">
+        <FormField
+          control={form.control}
+          name="thread"
+          render={({ field }) => (
+            <FormItem className="flex flex-col  gap-3 w-full">
+              <FormLabel className="text-base-semibold text-light-2">Content</FormLabel>
+              <FormControl className="no-focus border border-dark-4 bg-dark-3 text-light-1">
+                <Textarea rows={15} {...field} className="account-form_input no-focus" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" className="bg-primary-500">
+          Post Thread
+        </Button>
+      </form>
+    </Form>
+  );
 };
 
 export default PostThread;
