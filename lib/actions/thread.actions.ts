@@ -21,7 +21,7 @@ export async function createThread({ author, communityId, path, text }: Params) 
       author,
       community: communityId,
     });
-    console.log(createdThread);
+
     //UPDATE USER MODEL
     await User.findByIdAndUpdate(author, {
       $push: { threads: createdThread._id },
@@ -113,5 +113,15 @@ export async function addCommentToThread(threadId: string, commentText: string, 
     revalidatePath(path);
   } catch (error: any) {
     throw new Error(`Could not create comment. Error: ${error.message}`);
+  }
+}
+
+export async function fetchThreadByUser(userId: string) {
+  try {
+    connectToDb();
+    const thread = await Thread.find({ author: userId });
+    return thread;
+  } catch (error: any) {
+    throw new Error(`Could not fetch threads. Error: ${error.message}`);
   }
 }
